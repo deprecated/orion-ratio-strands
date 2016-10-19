@@ -1,3 +1,33 @@
+* Identifying strands in ratio-ratio space
+** Steps to mapping strands into real space
++ Multiple strands apparent in ratio-ratio plots
++ Plan to plot these in real celestial space.
+
+Steps are as follows: 
+
+1. First save fits files of the 2d histogram
+
+2. Second. Use ds9 to put some points along each strand. Save them to a region file.
+
+   - (2 bis) Put the curves on using Graphics.app so we can make sure they are continuous
+
+3. Third. Fit a curve to each strand. We could use a quadratic, or we could use the mixing curve between two pure states. *Would it be better to do it in linear space?*
+
+4. Fourth. For each strand and for each point in ratio–ratio space, find the closest distance r from the line.
+
+5. Fifth. Use this distance s to create an "affinity" function. For instance a Gaussian: exp(–r^2 / w^2), where w is the desired width of the thread.
+
+6. Sixth. Use this affinity as an alpha channel to pick out the thread in celestial coordinate space. We could also calculate the longitudinal distance s along the thread.
+
+*** Mixing línes
+
+If we have two pure states x1, y1 and x2, y2 that we mix together with fraction f. Then we have x = f x1 + (1 - f) x2 and similar for y.
+
+(x - x2) / (x1 - x2) = (y - y2) / (y1 - y2)
+
+So this will be a straight line in linear-linear space.
+
+
 * Two dimensional histograms of [N II]/Ha vs [O III]/Hb
 
 #+BEGIN_SRC python :results file :return figfile
