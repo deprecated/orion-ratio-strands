@@ -1,0 +1,146 @@
+* Two dimensional histograms of [N II]/Ha vs [O III]/Hb
+
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-6563.fits')[0]
+
+  x = np.log10(hdu1.data.ravel())
+  y = np.log10(hdu2.data.ravel())
+
+  xyrange = [-1.2, -0.2], [-0.8, 0.2]
+  ax.hist2d(x, y, bins=[500, 500], range=xyrange, norm=PowerNorm(0.5))
+
+  ax.set(
+      xlabel=r'$\log_{10} [\mathrm{N II}]\ \lambda 6568/ \mathrm{H}\alpha$',
+      ylabel=r'$\log_{10} [\mathrm{O III}]\ \lambda 5007] / \mathrm{H}\alpha$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-hist2d-muse.pdf]]
+
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  from astropy.wcs import WCS
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-hb-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-6563.fits')[0]
+  hdu3 = fits.open('../Ratios-for-Alba/ratio-4861-6563.fits')[0]
+  x = np.log10(hdu1.data.ravel())
+  y = np.log10(hdu2.data.ravel() / hdu3.data.ravel())
+
+  xyrange = [-1.2, -0.2], [-0.8 + 0.5, 0.2 + 0.5]
+  counts, xedges, yedges, _ = ax.hist2d(x, y,
+                                        bins=[200, 200], range=xyrange,
+                                        norm=PowerNorm(0.5), cmap='viridis')
+  w = WCS(naxis=2)
+  w.wcs.crpix = 0.5, 0.5
+  w.wcs.crval = xedges[0], yedges[0]
+  w.wcs.cdelt = np.diff(xedges)[0], np.diff(yedges)[0]
+  w.wcs.ctype = 'linear', 'linear'
+  fits.PrimaryHDU(header=w.to_header(),
+                  data=counts.T).writeto(figfile.replace('.pdf', '.fits'),
+                                         clobber=True)
+
+
+  ax.grid(alpha=0.3)
+  ax.set(
+      xlabel=r'$\log_{10} [\mathrm{N II}]\ \lambda 6568/ \mathrm{H}\alpha$',
+      ylabel=r'$\log_{10} [\mathrm{O III}]\ \lambda 5007 / \mathrm{H}\beta$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-hb-hist2d-muse.pdf]]
+
+Do a linear version
+
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-hb-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-6563.fits')[0]
+  hdu3 = fits.open('../Ratios-for-Alba/ratio-4861-6563.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() / hdu3.data.ravel()
+
+  xyrange = [0.0, 0.7], [0.0, 5.0]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{N II}]\ \lambda 6568 / \mathrm{H}\alpha $',
+      ylabel=r'$[\mathrm{O III}]\ \lambda 5007 / \mathrm{H}\beta$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-hb-linear-hist2d-muse.pdf]]
+
+
+
+#+BEGIN_SRC python :results output verbatim
+  from astropy.io import fits
+  import numpy as np
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-5007-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-4861-6563.fits')[0]
+
+  hdu1.data /= hdu2.data
+  hdu1.writeto('../Ratios-for-Alba/ratio-5007-4861.fits', clobber=True)
+
+  hdu1.data = np.log10(hdu1.data)
+  hdu1.writeto('../Ratios-for-Alba/log10-ratio-5007-4861.fits', clobber=True)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu1.data = np.log10(hdu1.data)
+  hdu1.writeto('../Ratios-for-Alba/log10-ratio-6583-6563.fits', clobber=True)
+#+END_SRC
+
+#+RESULTS:
