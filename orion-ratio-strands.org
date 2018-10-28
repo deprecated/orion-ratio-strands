@@ -174,3 +174,155 @@ Do a linear version
 #+END_SRC
 
 #+RESULTS:
+
+
+** Add further ratios
+
+*** [O III]/[O II] vs [S III]/[S II]
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o3o2-s3s2-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-9069-6731.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-7318.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 30], [0.0, 130]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{S III}]\ \lambda 9069 / [\mathrm{S II}] 6731$',
+      ylabel=r'$[\mathrm{O III}]\ \lambda 5007 / [\mathrm{O II}]\ \lambda 7318$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o3o2-s3s2-linear-hist2d-muse.pdf]]
+
+*** Other way up: [O II]/[O III] vs [S II]/[S III]
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o2o3-s2s3-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-9069-6731.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-7318.fits')[0]
+  x = 1./hdu1.data.ravel()
+  y = 1./hdu2.data.ravel() 
+
+  xyrange = [0.0, 0.65], [0.0, 0.12]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{S II}] 6731 / [\mathrm{S III}]\ \lambda 9069$',
+      ylabel=r'$[\mathrm{O II}]\ \lambda 7318 / [\mathrm{O III}]\ \lambda 5007$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o2o3-s2s3-linear-hist2d-muse.pdf]]
+
+*** [O II]/[N II] vs [N II]/Ha
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o2n2-n2ha-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-7330-6583.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 0.7], [0.0, 0.23]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{N II}]\ \lambda 6583 / \mathrm{H}\alpha $',
+      ylabel=r'$[\mathrm{O II}]\ \lambda 7330 / [\mathrm{N II}]\ \lambda 6583 $',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o2n2-n2ha-linear-hist2d-muse.pdf]]
+
+*** [S II] 6731/6716 vs [N II]/Ha
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-s2den-n2ha-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-6716-6731.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 0.7], [0.0, 1.5]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{N II}]\ \lambda 6568 / \mathrm{H}\alpha $',
+      ylabel=r'$[\mathrm{S II}]\ \lambda 6716 / 6731$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-s2den-n2ha-linear-hist2d-muse.pdf]]
+

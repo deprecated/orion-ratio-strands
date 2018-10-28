@@ -1,0 +1,21 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+physical
+point(24.478656,181.23597) # point=cross color=red tag={Strand B}
+point(30.938879,179.29791) # point=cross color=red tag={Strand B}
+point(38.852652,176.71382) # point=cross color=red tag={Strand B}
+point(60.332895,170.09209) # point=cross color=red tag={Strand B}
+point(70.346241,166.86198) # point=cross color=red tag={Strand B}
+point(115.72931,153.45701) # point=cross color=red tag={Strand B}
+point(109.5921,155.55659) # point=cross color=red tag={Strand B}
+point(103.29338,156.84863) # point=cross color=red tag={Strand B}
+point(78.098509,164.27789) # point=cross color=red tag={Strand B}
+point(47.89858,181.09026) # point=cross
+point(56.426075,179.53981) # point=cross
+point(66.310216,177.98935) # point=cross
+point(90.342247,169.65566) # point=cross
+point(101.19542,164.42288) # point=cross
+point(108.75388,161.70959) # point=cross
+point(135.11159,146.78647) # point=cross
+point(140.53818,143.68557) # point=cross
+point(146.74,139.80943) # point=cross
