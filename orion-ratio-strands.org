@@ -28,6 +28,24 @@ If we have two pure states x1, y1 and x2, y2 that we mix together with fraction 
 So this will be a straight line in linear-linear space.
 
 
+
+* Other things to do 
+
+** Bin the maps
++ The [N II]/Ha and [O III]/Hb ratios have very little noise, but the other ratios do
++ They would benefit by a small amount of binning
+  + Even 4x4 makes a big difference to the density and temperature diagnostic ratios
+  + We can't bin too much, or we will lose the ability to see the strands
+
+** Dimensional reduction
++ We have lots of ratios, and the 3d visualizations show that a plane would fit them quite well
++ We could try using PCA or ICA to find the most important eigenvectors
+  + [[http://gael-varoquaux.info/science/ica_vs_pca.html][Blog post by Gael Varoquaux that explains difference between PCA and ICA]]
+  + [[http://scikit-learn.org/stable/auto_examples/decomposition/plot_ica_vs_pca.html#sphx-glr-auto-examples-decomposition-plot-ica-vs-pca-py][Example using scikit-learn]]
++ Binning is probably important for this
++ We can also consider doing Box-Cox transformation to make the distributions more Gaussian
+  + See [[http://scikit-learn.org/stable/modules/preprocessing.html#preprocessing-transformer][discussion in scikit-learn docs]]
+  + But maybe that is eliminating too much real info
 * Two dimensional histograms of [N II]/Ha vs [O III]/Hb
 
 #+BEGIN_SRC python :results file :return figfile
@@ -142,7 +160,7 @@ Do a linear version
   ax.grid(alpha=0.3)
 
   ax.set(
-      xlabel=r'$[\mathrm{N II}]\ \lambda 6568 / \mathrm{H}\alpha $',
+      xlabel=r'$[\mathrm{N II}]\ \lambda 6583 / \mathrm{H}\alpha $',
       ylabel=r'$[\mathrm{O III}]\ \lambda 5007 / \mathrm{H}\beta$',
   )
 
@@ -154,7 +172,7 @@ Do a linear version
 #+RESULTS:
 [[file:bpt-hb-linear-hist2d-muse.pdf]]
 
-
+Make some ratios
 
 #+BEGIN_SRC python :results output verbatim
   from astropy.io import fits
@@ -178,7 +196,288 @@ Do a linear version
 
 ** Add further ratios
 
-*** [O III]/[O II] vs [S III]/[S II]
+
+*** Try using [O II]/[N II] as a 3rd dimension
++ Plan is to make a cube, so these will be projections into the other 2 faces
++ It is harder to see strands in the graphs that include [O II]/[N II]
++ [[file:three-d-oii-nii.pdf]] show the three principal projections of the parameter cube
++ In jupyter notebook we do 3d visualization, which is sorta useful
+  + [[file:Ratios%20in%203d%20with%20ipyvolume.ipynb]]
+  + [[file:Ratios%20in%203d%20with%20ipyvolume.py]]
++ Might be better using yt
+  + http://yt-project.org
+**** [O II]/[N II] vs [N II]/Ha
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o2n2-n2ha-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-7330-6583.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 0.7], [0.0, 0.23]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xticks=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+      xlabel=r'$[\mathrm{N II}]\ \lambda 6583 / \mathrm{H}\alpha $',
+      ylabel=r'$[\mathrm{O II}]\ \lambda 7330 / [\mathrm{N II}]\ \lambda 6583 $',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o2n2-n2ha-linear-hist2d-muse.pdf]]
+**** [O III]/Hb vs [O II]/[N II]
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o3hb-o2n2-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-7330-6583.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-4861.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 0.23], [0.0, 5.0]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{O II}]\ \lambda 7330 / [\mathrm{N II}]\ \lambda 6583 $',
+      ylabel=r'$[\mathrm{O III}]\ \lambda 5007 / \mathrm{H}\beta $',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o3hb-o2n2-linear-hist2d-muse.pdf]]
+
+*** Try with density as third parameter instead
++ [[file:three-d-sii-den.pdf]] 
+**** [S II] 6731/6716 vs [N II]/Ha
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-s2den-n2ha-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-6716-6731.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 0.7], [0.0, 1.7]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{N II}]\ \lambda 6568 / \mathrm{H}\alpha $',
+      ylabel=r'$[\mathrm{S II}]\ \lambda 6716 / 6731$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-s2den-n2ha-linear-hist2d-muse.pdf]]
+
+**** [O III]/Hb vs [S II] 6731/6716
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o3hb-s2den-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6716-6731.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-4861.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 1.7], [0.0, 5.0]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{S II}]\ \lambda 6716 / 6731$',
+      ylabel=r'$[\mathrm{O III}]\ \lambda 5007 / \mathrm{H}\beta $',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o3hb-s2den-linear-hist2d-muse.pdf]]
+
+*** Try [S III]/[S II] as third parameter instead
+**** [S III]/[S II] vs [N II]/Ha
++ This looks pretty good actually
++ [[file:three-d-siii-sii.pdf]] shows
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-s2s2-n2ha-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-9069-6731.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 0.7], [0.0, 30]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{N II}]\ \lambda 6568 / \mathrm{H}\alpha $',
+      ylabel=r'$[\mathrm{S III}]\ \lambda 9069 / [\mathrm{S III}]\ \lambda 6731$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-s2s2-n2ha-linear-hist2d-muse.pdf]]
+
+**** [O III]/Hb versus [S III]/[S II]
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o3-hb-s2s2-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-9069-6731.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-4861.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 30], [0.0, 5.0]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{S III}]\ \lambda 9069 / [\mathrm{S III}]\ \lambda 6731$',
+      ylabel=r'$[\mathrm{O III}]\ \lambda 5007 / \mathrm{H}\beta $',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o3-hb-s2s2-linear-hist2d-muse.pdf]]
+
+
+*** Other combinations
+
+
+**** [O III]/[O II] vs [O II]/[O I]
+This is just too noisy.  Might be OK with binning
+
+#+BEGIN_SRC python :results file :return figfile
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from matplotlib.colors import PowerNorm
+  from astropy.io import fits
+  import seaborn as sns
+  sns.set_style('whitegrid')
+  sns.set_context('talk')
+  sns.set_color_codes()
+
+  figfile = 'bpt-o3o2-o2o1-linear-hist2d-muse.pdf'
+  sns.set_palette("Purples_r")
+  fig, ax = plt.subplots(1, 1)
+
+  hdu1 = fits.open('../Ratios-for-Alba/ratio-7330-6300.fits')[0]
+  hdu2 = fits.open('../Ratios-for-Alba/ratio-5007-7318.fits')[0]
+  x = hdu1.data.ravel()
+  y = hdu2.data.ravel() 
+
+  xyrange = [0.0, 30], [0.0, 130]
+  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
+  ax.grid(alpha=0.3)
+
+  ax.set(
+      xlabel=r'$[\mathrm{O II}]\ \lambda 7330 / [\mathrm{O I}] 6300$',
+      ylabel=r'$[\mathrm{O III}]\ \lambda 5007 / [\mathrm{O II}]\ \lambda 7318$',
+  )
+
+  fig.set_size_inches(6, 6)
+  fig.tight_layout()
+  fig.savefig(figfile)
+#+END_SRC
+
+#+RESULTS:
+[[file:bpt-o3o2-o2o1-linear-hist2d-muse.pdf]]
+
+
+**** [O III]/[O II] vs [S III]/[S II]
 #+BEGIN_SRC python :results file :return figfile
   import numpy as np
   from matplotlib import pyplot as plt
@@ -215,7 +514,7 @@ Do a linear version
 #+RESULTS:
 [[file:bpt-o3o2-s3s2-linear-hist2d-muse.pdf]]
 
-*** Other way up: [O II]/[O III] vs [S II]/[S III]
+**** Other way up: [O II]/[O III] vs [S II]/[S III]
 #+BEGIN_SRC python :results file :return figfile
   import numpy as np
   from matplotlib import pyplot as plt
@@ -251,78 +550,4 @@ Do a linear version
 
 #+RESULTS:
 [[file:bpt-o2o3-s2s3-linear-hist2d-muse.pdf]]
-
-*** [O II]/[N II] vs [N II]/Ha
-#+BEGIN_SRC python :results file :return figfile
-  import numpy as np
-  from matplotlib import pyplot as plt
-  from matplotlib.colors import PowerNorm
-  from astropy.io import fits
-  import seaborn as sns
-  sns.set_style('whitegrid')
-  sns.set_context('talk')
-  sns.set_color_codes()
-
-  figfile = 'bpt-o2n2-n2ha-linear-hist2d-muse.pdf'
-  sns.set_palette("Purples_r")
-  fig, ax = plt.subplots(1, 1)
-
-  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
-  hdu2 = fits.open('../Ratios-for-Alba/ratio-7330-6583.fits')[0]
-  x = hdu1.data.ravel()
-  y = hdu2.data.ravel() 
-
-  xyrange = [0.0, 0.7], [0.0, 0.23]
-  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
-  ax.grid(alpha=0.3)
-
-  ax.set(
-      xlabel=r'$[\mathrm{N II}]\ \lambda 6583 / \mathrm{H}\alpha $',
-      ylabel=r'$[\mathrm{O II}]\ \lambda 7330 / [\mathrm{N II}]\ \lambda 6583 $',
-  )
-
-  fig.set_size_inches(6, 6)
-  fig.tight_layout()
-  fig.savefig(figfile)
-#+END_SRC
-
-#+RESULTS:
-[[file:bpt-o2n2-n2ha-linear-hist2d-muse.pdf]]
-
-*** [S II] 6731/6716 vs [N II]/Ha
-#+BEGIN_SRC python :results file :return figfile
-  import numpy as np
-  from matplotlib import pyplot as plt
-  from matplotlib.colors import PowerNorm
-  from astropy.io import fits
-  import seaborn as sns
-  sns.set_style('whitegrid')
-  sns.set_context('talk')
-  sns.set_color_codes()
-
-  figfile = 'bpt-s2den-n2ha-linear-hist2d-muse.pdf'
-  sns.set_palette("Purples_r")
-  fig, ax = plt.subplots(1, 1)
-
-  hdu1 = fits.open('../Ratios-for-Alba/ratio-6583-6563.fits')[0]
-  hdu2 = fits.open('../Ratios-for-Alba/ratio-6716-6731.fits')[0]
-  x = hdu1.data.ravel()
-  y = hdu2.data.ravel() 
-
-  xyrange = [0.0, 0.7], [0.0, 1.5]
-  ax.hist2d(x, y, bins=[300, 300], range=xyrange, norm=PowerNorm(0.5), cmap='viridis')
-  ax.grid(alpha=0.3)
-
-  ax.set(
-      xlabel=r'$[\mathrm{N II}]\ \lambda 6568 / \mathrm{H}\alpha $',
-      ylabel=r'$[\mathrm{S II}]\ \lambda 6716 / 6731$',
-  )
-
-  fig.set_size_inches(6, 6)
-  fig.tight_layout()
-  fig.savefig(figfile)
-#+END_SRC
-
-#+RESULTS:
-[[file:bpt-s2den-n2ha-linear-hist2d-muse.pdf]]
 
