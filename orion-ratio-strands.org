@@ -28,7 +28,6 @@ If we have two pure states x1, y1 and x2, y2 that we mix together with fraction 
 So this will be a straight line in linear-linear space.
 
 
-
 * Other things to do 
 
 ** Bin the maps
